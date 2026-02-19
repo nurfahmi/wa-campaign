@@ -1,0 +1,31 @@
+{
+  "name": "wacampaign",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "db:setup": "source .env 2>/dev/null; /Applications/MAMP/Library/bin/mysql -u ${DB_USER:-root} $([ -n \"$DB_PASS\" ] && echo \"-p$DB_PASS\") -P ${DB_PORT:-3306} -S ${DB_SOCKET:-/tmp/mysql.sock} < schema.sql",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.7",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.3.1",
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "mysql2": "^3.17.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
+  }
+}

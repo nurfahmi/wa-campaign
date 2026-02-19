@@ -1,0 +1,61 @@
+<%- include('partials/header') %>
+
+<div class="space-y-4">
+  <form method="GET" class="flex gap-3">
+    <input type="text" name="search" value="<%= search %>" placeholder="Search users..." class="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+    <button type="submit" class="px-4 py-2 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 transition">Search</button>
+  </form>
+
+  <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-800/50">
+          <tr>
+            <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">User</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Role</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Credit</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <% rows.forEach(u => { %>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+            <td class="px-4 py-3"><p class="font-medium"><%= u.name %></p><p class="text-xs text-gray-400"><%= u.email %></p></td>
+            <td class="px-4 py-3">
+              <span class="inline-flex px-2 py-0.5 text-xs rounded-full <%= u.role === 'superadmin' ? 'bg-red-100 text-red-700' : u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' %>"><%= u.role %></span>
+            </td>
+            <td class="px-4 py-3 font-medium"><%= formatMoney(u.credit_balance) %></td>
+            <td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 text-xs rounded-full <%= u.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>"><%= u.status %></span></td>
+            <td class="px-4 py-3">
+              <div class="flex gap-2">
+                <form method="POST" action="/admin/users/<%= u.id %>" class="inline">
+                  <select name="status" onchange="this.form.submit()" class="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <option value="active" <%= u.status === 'active' ? 'selected' : '' %>>Active</option>
+                    <option value="suspended" <%= u.status === 'suspended' ? 'selected' : '' %>>Suspend</option>
+                  </select>
+                </form>
+                <form method="POST" action="/admin/users/<%= u.id %>/credit" class="inline flex gap-1">
+                  <input type="number" step="0.01" name="amount" placeholder="±amt" class="w-20 text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                  <input type="hidden" name="description" value="Admin adjustment">
+                  <button type="submit" class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition">Adjust</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <% if (totalPages > 1) { %>
+  <div class="flex justify-center gap-2">
+    <% for (let i = 1; i <= totalPages; i++) { %>
+    <a href="/admin/users?page=<%= i %>&search=<%= search %>" class="px-3 py-1.5 text-sm rounded-lg <%= i === page ? 'bg-brand-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-700' %> transition"><%= i %></a>
+    <% } %>
+  </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+<div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">ID</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">User</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Amount</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Type</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Description</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Date</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <% rows.forEach(log => { %>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30">
+          <td class="px-4 py-3 text-gray-400">#<%= log.id %></td>
+          <td class="px-4 py-3 font-medium"><%= log.user_name || '-' %></td>
+          <td class="px-4 py-3 <%= parseFloat(log.amount) >= 0 ? 'text-green-600' : 'text-red-600' %> font-medium"><%= parseFloat(log.amount) >= 0 ? '+' : '-' %><%= formatMoney(Math.abs(log.amount)) %></td>
+          <td class="px-4 py-3">
+            <span class="inline-flex px-2 py-0.5 text-xs rounded-full
+              <%= log.type === 'job_reward' ? 'bg-green-100 text-green-700' : log.type === 'referral_bonus' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700' %>"><%= log.type %></span>
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate"><%= log.description || '-' %></td>
+          <td class="px-4 py-3 text-gray-400 text-xs"><%= new Date(log.created_at).toLocaleString() %></td>
+        </tr>
+        <% }); %>
+        <% if (!rows.length) { %><tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No credit logs</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% if (totalPages > 1) { %>
+<div class="flex justify-center gap-2 mt-6">
+  <% for (let i = 1; i <= totalPages; i++) { %>
+  <a href="/admin/credits?page=<%= i %>" class="px-3 py-1.5 text-sm rounded-lg <%= i === page ? 'bg-brand-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-700' %> transition"><%= i %></a>
+  <% } %>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

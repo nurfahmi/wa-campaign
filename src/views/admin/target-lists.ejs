@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+
+<div class="flex items-center justify-between mb-6">
+  <h3 class="text-lg font-semibold">Target Lists</h3>
+</div>
+
+<!-- Create New List + Upload -->
+<div class="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 mb-6">
+  <h4 class="font-medium mb-3 text-sm">Create New Target List</h4>
+  <form method="POST" action="/admin/targets" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-3">
+    <input type="text" name="name" required placeholder="List name (e.g. Jakarta Numbers)" class="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+    <input type="file" name="csv" accept=".csv,.txt" required class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-brand-100 file:text-brand-700 hover:file:bg-brand-200">
+    <button type="submit" class="px-6 py-2 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 transition whitespace-nowrap">Create & Upload</button>
+  </form>
+  <p class="text-xs text-gray-400 mt-2">CSV with phone numbers (one per row, first column)</p>
+</div>
+
+<div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Name</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Total Numbers</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Created</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <% rows.forEach(l => { %>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+          <td class="px-4 py-3 font-medium"><%= l.name %></td>
+          <td class="px-4 py-3"><%= l.total_count.toLocaleString() %></td>
+          <td class="px-4 py-3 text-gray-400 text-xs"><%= new Date(l.created_at).toLocaleDateString() %></td>
+          <td class="px-4 py-3 flex gap-2">
+            <a href="/admin/targets/<%= l.id %>" class="text-brand-600 hover:text-brand-700 text-sm font-medium">View</a>
+            <form method="POST" action="/admin/targets/<%= l.id %>/delete" onsubmit="return confirm('Delete this list and all numbers?')" class="inline">
+              <button type="submit" class="text-red-400 hover:text-red-600 text-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+        <% }); %>
+        <% if (!rows.length) { %>
+        <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">No target lists. Upload your first CSV above!</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (totalPages > 1) { %>
+<div class="flex justify-center gap-2 mt-6">
+  <% for (let i = 1; i <= totalPages; i++) { %>
+  <a href="/admin/targets?page=<%= i %>" class="px-3 py-1.5 text-sm rounded-lg <%= i === page ? 'bg-brand-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-700' %> transition"><%= i %></a>
+  <% } %>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

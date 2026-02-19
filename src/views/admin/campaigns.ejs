@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+
+<div class="flex items-center justify-between mb-6">
+  <h3 class="text-lg font-semibold">Campaigns</h3>
+  <a href="/admin/campaigns/new" class="px-4 py-2 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 transition">+ New Campaign</a>
+</div>
+
+<div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Name</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Reward</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Progress</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <% rows.forEach(c => { %>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+          <td class="px-4 py-3 font-medium"><%= c.name %></td>
+          <td class="px-4 py-3">
+            <span class="inline-flex px-2 py-0.5 text-xs rounded-full
+              <%= c.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' :
+                 c.status === 'paused' ? 'bg-amber-100 text-amber-700' :
+                 c.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700' %>"><%= c.status %></span>
+          </td>
+          <td class="px-4 py-3"><%= formatMoney(c.reward_per_job) %></td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <div class="w-24 bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+                <div class="bg-brand-500 h-1.5 rounded-full" style="width: <%= c.target_total > 0 ? Math.round(c.target_delivered / c.target_total * 100) : 0 %>%"></div>
+              </div>
+              <span class="text-xs text-gray-500"><%= c.target_delivered %>/<%= c.target_total %></span>
+            </div>
+          </td>
+          <td class="px-4 py-3"><a href="/admin/campaigns/<%= c.id %>" class="text-brand-600 hover:text-brand-700 text-sm font-medium">View</a></td>
+        </tr>
+        <% }); %>
+        <% if (!rows.length) { %>
+        <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No campaigns yet</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (totalPages > 1) { %>
+<div class="flex justify-center gap-2 mt-6">
+  <% for (let i = 1; i <= totalPages; i++) { %>
+  <a href="/admin/campaigns?page=<%= i %>" class="px-3 py-1.5 text-sm rounded-lg <%= i === page ? 'bg-brand-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-700' %> transition"><%= i %></a>
+  <% } %>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

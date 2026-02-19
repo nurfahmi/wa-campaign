@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | WA Campaign</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { 50:'#f0fdf4', 100:'#dcfce7', 200:'#bbf7d0', 300:'#86efac', 400:'#4ade80', 500:'#22c55e', 600:'#16a34a', 700:'#15803d', 800:'#166534', 900:'#14532d' } } } }
+    }
+  </script>
+  <style>
+    @keyframes fadeUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .animate-fade-up{animation:fadeUp .5s ease-out both}
+    .delay-100{animation-delay:.1s}.delay-200{animation-delay:.2s}.delay-300{animation-delay:.3s}
+  </style>
+</head>
+<body class="bg-gray-100">
+<div class="max-w-sm mx-auto min-h-screen bg-gray-50 shadow-xl relative">
+
+<!-- Top Bar -->
+<div class="bg-gradient-to-br from-brand-700 via-brand-600 to-emerald-500 px-5 pt-12 pb-6 rounded-b-3xl relative overflow-hidden">
+  <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4"></div>
+  <div class="flex items-center gap-3 mb-4 relative z-10">
+    <a href="/home" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur">
+      <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <h1 class="text-white text-lg font-bold">Profil Kamu</h1>
+  </div>
+</div>
+
+<div class="px-5 -mt-4 space-y-4 pb-8">
+  <!-- Profile Card -->
+  <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100 text-center animate-fade-up">
+    <div class="w-16 h-16 mx-auto bg-gradient-to-br from-brand-400 to-brand-600 rounded-full flex items-center justify-center mb-3 shadow-lg shadow-brand-500/20">
+      <span class="text-2xl font-black text-white"><%= user.name.charAt(0).toUpperCase() %></span>
+    </div>
+    <h2 class="text-lg font-bold text-gray-800"><%= user.name %></h2>
+    <p class="text-sm text-gray-500"><%= user.email %></p>
+    <div class="mt-4 flex justify-center gap-6">
+      <div class="text-center">
+        <p class="text-xl font-black text-brand-600"><%= formatMoney(user.credit_balance) %></p>
+        <p class="text-xs text-gray-400">Saldo</p>
+      </div>
+      <div class="w-px bg-gray-200"></div>
+      <div class="text-center">
+        <p class="text-xl font-black text-gray-800"><%= profile.referrals ? profile.referrals.length : 0 %></p>
+        <p class="text-xs text-gray-400">Referral</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-2 gap-3 animate-fade-up delay-100">
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 text-center">
+      <p class="text-2xl font-bold text-brand-600"><%= profile.dailyJobs %><span class="text-gray-300 text-sm">/<%= user.daily_limit %></span></p>
+      <p class="text-xs text-gray-500 mt-1">Job Hari Ini</p>
+    </div>
+    <div class="bg-white rounded-2xl p-4 border border-gray-100 text-center">
+      <p class="text-2xl font-bold text-brand-600"><%= profile.hourlyJobs %><span class="text-gray-300 text-sm">/<%= user.hourly_limit %></span></p>
+      <p class="text-xs text-gray-500 mt-1">Job Jam Ini</p>
+    </div>
+  </div>
+
+  <!-- Details -->
+  <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 animate-fade-up delay-200">
+    <h3 class="text-sm font-bold text-gray-800 mb-3">📋 Detail</h3>
+    <div class="space-y-3">
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-gray-500">Status</span>
+        <span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full <%= user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>"><%= user.status === 'active' ? '✅ Aktif' : '🚫 Suspended' %></span>
+      </div>
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-gray-500">Negara</span>
+        <span class="font-medium text-gray-800"><%= user.country || '—' %></span>
+      </div>
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-gray-500">Kode Referral</span>
+        <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded-lg text-gray-600"><%= user.referral_code %></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Country Update -->
+  <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 animate-fade-up delay-300">
+    <h3 class="text-sm font-bold text-gray-800 mb-3">🌍 Update Negara</h3>
+    <form method="POST" action="/profile" class="flex gap-2">
+      <input type="text" name="country" value="<%= user.country || '' %>" maxlength="5"
+        class="flex-1 text-sm bg-gray-50 rounded-xl px-3 py-2.5 border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition" placeholder="ID, MY, PH...">
+      <button type="submit" class="px-4 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-bold hover:bg-brand-600 transition active:scale-95">Simpan</button>
+    </form>
+  </div>
+
+  <!-- Navigation -->
+  <div class="space-y-2">
+    <a href="/referrals" class="flex items-center justify-between bg-white rounded-2xl p-4 border border-gray-100 hover:border-purple-200 hover:bg-purple-50/50 transition group">
+      <div class="flex items-center gap-3">
+        <span class="text-lg">🤝</span>
+        <span class="text-sm font-medium text-gray-700 group-hover:text-purple-700">Daftar Referral</span>
+      </div>
+      <svg class="w-4 h-4 text-gray-400 group-hover:text-purple-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <!-- Logout -->
+  <div class="text-center pt-2">
+    <a href="/logout" class="text-sm text-red-400 hover:text-red-600 font-medium transition">🚪 Keluar</a>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<%- include('partials/header') %>
+
+<div class="flex items-center justify-between mb-6">
+  <h3 class="text-lg font-semibold">Message Templates</h3>
+  <a href="/admin/templates/new" class="px-4 py-2 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 transition">+ New Template</a>
+</div>
+
+<div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Name</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Type</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Body Preview</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Created</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <% rows.forEach(t => { %>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition">
+          <td class="px-4 py-3 font-medium"><%= t.name %></td>
+          <td class="px-4 py-3">
+            <span class="inline-flex px-2 py-0.5 text-xs rounded-full <%= t.message_type === 'button' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' %>"><%= t.message_type %></span>
+          </td>
+          <td class="px-4 py-3 text-gray-500 max-w-xs truncate"><%= t.body ? t.body.substring(0, 60) : '' %>...</td>
+          <td class="px-4 py-3 text-gray-400 text-xs"><%= new Date(t.created_at).toLocaleDateString() %></td>
+          <td class="px-4 py-3 flex gap-2">
+            <a href="/admin/templates/<%= t.id %>/edit" class="text-brand-600 hover:text-brand-700 text-sm font-medium">Edit</a>
+            <form method="POST" action="/admin/templates/<%= t.id %>/delete" onsubmit="return confirm('Delete this template?')" class="inline">
+              <button type="submit" class="text-red-400 hover:text-red-600 text-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+        <% }); %>
+        <% if (!rows.length) { %>
+        <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No templates yet. Create your first message template!</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (totalPages > 1) { %>
+<div class="flex justify-center gap-2 mt-6">
+  <% for (let i = 1; i <= totalPages; i++) { %>
+  <a href="/admin/templates?page=<%= i %>" class="px-3 py-1.5 text-sm rounded-lg <%= i === page ? 'bg-brand-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-700' %> transition"><%= i %></a>
+  <% } %>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,200 @@
+<%- include('partials/header') %>
+
+<div class="max-w-5xl mx-auto">
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+    <!-- Form (3 cols) -->
+    <div class="lg:col-span-3">
+      <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
+        <h3 class="text-lg font-semibold mb-6"><%= template ? 'Edit Template' : 'New Template' %></h3>
+        <form method="POST" action="<%= template ? '/admin/templates/' + template.id : '/admin/templates' %>" id="tplForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Template Name</label>
+            <input type="text" name="name" id="fName" value="<%= template ? template.name : '' %>" required placeholder="e.g. Promo blast v1" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message Type</label>
+            <select name="message_type" id="fType" onchange="onTypeChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+              <option value="text" <%= template && template.message_type === 'text' ? 'selected' : '' %>>Text</option>
+              <option value="button" <%= template && template.message_type === 'button' ? 'selected' : '' %>>Button</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Header <span class="text-gray-400">(optional)</span></label>
+            <input type="text" name="header" id="fHeader" value="<%= template ? template.header || '' : '' %>" oninput="updatePreview()" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Body *</label>
+            <textarea name="body" id="fBody" rows="5" required oninput="updatePreview()" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none"><%= template ? template.body : '' %></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Footer <span class="text-gray-400">(optional)</span></label>
+            <input type="text" name="footer" id="fFooter" value="<%= template ? template.footer || '' : '' %>" oninput="updatePreview()" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image URL <span class="text-gray-400">(optional)</span></label>
+            <input type="url" name="image_url" id="fImage" value="<%= template ? template.image_url || '' : '' %>" oninput="updatePreview()" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+          </div>
+
+          <!-- Visual Button Builder -->
+          <div id="buttonSection" class="<%= (!template || template.message_type !== 'button') ? 'hidden' : '' %>">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Buttons <span class="text-gray-400 text-xs">(max 3)</span></label>
+            <div id="buttonList" class="space-y-2"></div>
+            <button type="button" onclick="addButton()" id="addBtnBtn" class="mt-2 flex items-center gap-2 px-4 py-2 text-sm text-brand-600 border border-dashed border-brand-300 dark:border-brand-700 rounded-xl hover:bg-brand-50 dark:hover:bg-brand-900/20 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Add Button
+            </button>
+            <!-- Hidden field that gets populated on submit -->
+            <input type="hidden" name="button_json" id="fButtonJson">
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="submit" class="flex-1 py-3 bg-brand-500 text-white rounded-xl font-medium hover:bg-brand-600 transition"><%= template ? 'Update' : 'Create' %> Template</button>
+            <a href="/admin/templates" class="px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition text-center">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Live Preview (2 cols) -->
+    <div class="lg:col-span-2">
+      <div class="sticky top-24">
+        <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Live Preview</p>
+        <div class="bg-[#e5ddd5] dark:bg-[#0b141a] rounded-2xl p-4 min-h-[300px]">
+          <!-- WA-style message bubble -->
+          <div class="max-w-[280px] ml-auto">
+            <!-- Image preview -->
+            <div id="prevImage" class="hidden mb-0.5">
+              <img id="prevImgTag" src="" class="w-full rounded-t-xl object-cover max-h-40" onerror="this.parentElement.classList.add('hidden')">
+            </div>
+            <div id="prevBubble" class="bg-[#dcf8c6] dark:bg-[#005c4b] rounded-xl p-3 shadow-sm" style="border-top-right-radius: 4px;">
+              <p id="prevHeader" class="font-bold text-sm text-gray-900 dark:text-gray-100 mb-1 hidden"></p>
+              <p id="prevBody" class="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed"></p>
+              <p id="prevFooter" class="text-xs text-gray-500 dark:text-gray-400 mt-2 hidden"></p>
+              <div class="flex items-center justify-end gap-1 mt-1">
+                <span class="text-[10px] text-gray-500 dark:text-gray-400">12:00</span>
+                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19 23.66 7l-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></svg>
+              </div>
+            </div>
+            <!-- Button previews -->
+            <div id="prevButtons" class="space-y-1 mt-1 hidden"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .btn-row{display:flex;gap:8px;align-items:center;padding:8px 12px;border-radius:12px;background:rgb(249 250 251);border:1px solid rgb(229 231 235)}
+  .dark .btn-row{background:rgb(31 41 55);border-color:rgb(55 65 81)}
+  .btn-row input,.btn-row select{flex:1;padding:6px 10px;border-radius:8px;border:1px solid rgb(229 231 235);background:white;font-size:13px;outline:none}
+  .dark .btn-row input,.dark .btn-row select{background:rgb(17 24 39);border-color:rgb(55 65 81);color:rgb(209 213 219)}
+  .btn-row input:focus,.btn-row select:focus{box-shadow:0 0 0 2px rgba(34,197,94,.3)}
+  .wa-btn-preview{text-align:center;padding:7px;background:#dcf8c6;border-radius:8px;font-size:14px;color:#0d7377;font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .dark .wa-btn-preview{background:#005c4b;color:#53bdeb}
+</style>
+
+<script>
+// Initialize buttons from existing data
+let buttons = [];
+<% if (template && template.button_json) { %>
+try { buttons = <%= JSON.stringify(template.button_json) %>; } catch(e) { buttons = []; }
+<% } %>
+
+function onTypeChange() {
+  const isButton = document.getElementById('fType').value === 'button';
+  document.getElementById('buttonSection').classList.toggle('hidden', !isButton);
+  updatePreview();
+}
+
+function renderButtons() {
+  const list = document.getElementById('buttonList');
+  list.innerHTML = '';
+  buttons.forEach((btn, i) => {
+    const row = document.createElement('div');
+    row.className = 'btn-row';
+    row.innerHTML = `
+      <span class="text-xs text-gray-400 font-mono w-5 flex-shrink-0">${i+1}</span>
+      <div class="flex-1 space-y-1.5">
+        <input type="text" placeholder="Button text" value="${btn.buttonText || ''}" oninput="buttons[${i}].buttonText=this.value;updatePreview()" style="width:100%">
+        <input type="url" placeholder="URL (optional)" value="${btn.buttonUrl || ''}" oninput="buttons[${i}].buttonUrl=this.value;updatePreview()" style="width:100%;font-size:12px;color:#6b7280">
+      </div>
+      <button type="button" onclick="removeButton(${i})" class="p-1 text-red-400 hover:text-red-600 flex-shrink-0" title="Remove">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </button>
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById('addBtnBtn').classList.toggle('hidden', buttons.length >= 3);
+  updatePreview();
+}
+
+function addButton() {
+  if (buttons.length >= 3) return;
+  buttons.push({ buttonId: String(buttons.length + 1), buttonText: '', buttonUrl: '' });
+  renderButtons();
+}
+
+function removeButton(i) {
+  buttons.splice(i, 1);
+  buttons.forEach((b, idx) => b.buttonId = String(idx + 1));
+  renderButtons();
+}
+
+function updatePreview() {
+  const header = document.getElementById('fHeader').value.trim();
+  const body = document.getElementById('fBody').value || 'Type your message...';
+  const footer = document.getElementById('fFooter').value.trim();
+  const image = document.getElementById('fImage').value.trim();
+  const isButton = document.getElementById('fType').value === 'button';
+
+  // Header
+  const ph = document.getElementById('prevHeader');
+  ph.textContent = header;
+  ph.classList.toggle('hidden', !header);
+
+  // Body
+  document.getElementById('prevBody').textContent = body;
+
+  // Footer
+  const pf = document.getElementById('prevFooter');
+  pf.textContent = footer;
+  pf.classList.toggle('hidden', !footer);
+
+  // Image
+  const pi = document.getElementById('prevImage');
+  const piTag = document.getElementById('prevImgTag');
+  if (image) {
+    piTag.src = image;
+    pi.classList.remove('hidden');
+  } else {
+    pi.classList.add('hidden');
+  }
+
+  // Buttons
+  const pb = document.getElementById('prevButtons');
+  if (isButton && buttons.length) {
+    pb.innerHTML = buttons.filter(b => b.buttonText).map(b => {
+      const linkIcon = b.buttonUrl ? '<svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>' : '';
+      return `<div class="wa-btn-preview">${linkIcon}${b.buttonText}</div>`;
+    }).join('');
+    pb.classList.remove('hidden');
+  } else {
+    pb.classList.add('hidden');
+  }
+}
+
+// On submit — serialize buttons to hidden JSON field
+document.getElementById('tplForm').addEventListener('submit', function() {
+  const isButton = document.getElementById('fType').value === 'button';
+  document.getElementById('fButtonJson').value = isButton ? JSON.stringify(buttons) : '';
+});
+
+// Init
+renderButtons();
+updatePreview();
+</script>
+
+<%- include('partials/footer') %>

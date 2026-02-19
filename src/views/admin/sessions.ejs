@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+
+<div class="space-y-6">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
+    <h3 class="font-semibold mb-4">Add WhatsApp Session</h3>
+    <form method="POST" action="/admin/sessions" class="flex flex-wrap gap-3">
+      <input type="text" name="session_id" placeholder="Session ID" required class="flex-1 min-w-[150px] px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+      <input type="text" name="phone_number" placeholder="Phone" class="flex-1 min-w-[120px] px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+      <select name="status" class="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm">
+        <option value="connected">Connected</option>
+        <option value="disconnected">Disconnected</option>
+      </select>
+      <button type="submit" class="px-4 py-2 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 transition">Add</button>
+    </form>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-800/50">
+          <tr>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Session ID</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Phone</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Last Used</th>
+            <th class="text-left px-4 py-3 font-medium text-gray-500">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+          <% sessions.forEach(s => { %>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30">
+            <td class="px-4 py-3 font-mono text-xs"><%= s.session_id %></td>
+            <td class="px-4 py-3"><%= s.phone_number || '-' %></td>
+            <td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 text-xs rounded-full <%= s.status === 'connected' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>"><%= s.status %></span></td>
+            <td class="px-4 py-3 text-xs text-gray-400"><%= s.last_used_at ? new Date(s.last_used_at).toLocaleString() : 'Never' %></td>
+            <td class="px-4 py-3">
+              <div class="flex gap-2">
+                <form method="POST" action="/admin/sessions/<%= s.id %>"><select name="status" onchange="this.form.submit()" class="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"><option value="connected" <%= s.status === 'connected' ? 'selected' : '' %>>Connected</option><option value="disconnected" <%= s.status === 'disconnected' ? 'selected' : '' %>>Disconnected</option></select><input type="hidden" name="phone_number" value="<%= s.phone_number %>"></form>
+                <form method="POST" action="/admin/sessions/<%= s.id %>/delete"><button type="submit" onclick="return confirm('Delete?')" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition">Delete</button></form>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+          <% if (!sessions.length) { %><tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No sessions</td></tr><% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

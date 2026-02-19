@@ -1,0 +1,10 @@
+    </main>
+  </div>
+</div>
+<script>
+  if(localStorage.getItem('darkMode')==='true')document.documentElement.classList.add('dark');
+  function toggleDark(){document.documentElement.classList.toggle('dark');localStorage.setItem('darkMode',document.documentElement.classList.contains('dark'))}
+  function toggleSidebar(){document.getElementById('sidebar').classList.toggle('-translate-x-full');document.getElementById('sidebarOverlay').classList.toggle('hidden')}
+</script>
+</body>
+</html>

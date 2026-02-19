@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+<div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-800/50">
+        <tr>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">ID</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">User</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Campaign</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Reward</th>
+          <th class="text-left px-4 py-3 font-medium text-gray-500">Date</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+        <% rows.forEach(j => { %>
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30">
+          <td class="px-4 py-3 text-gray-400">#<%= j.id %></td>
+          <td class="px-4 py-3 font-medium"><%= j.user_name || '-' %></td>
+          <td class="px-4 py-3"><%= j.campaign_name || '-' %></td>
+          <td class="px-4 py-3">
+            <span class="inline-flex px-2 py-0.5 text-xs rounded-full
+              <%= j.status === 'delivered' ? 'bg-green-100 text-green-700' : j.status === 'sent' ? 'bg-blue-100 text-blue-700' : j.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700' %>"><%= j.status %></span>
+          </td>
+          <td class="px-4 py-3"><%= formatMoney(j.reward_amount) %></td>
+          <td class="px-4 py-3 text-gray-400 text-xs"><%= new Date(j.created_at).toLocaleString() %></td>
+        </tr>
+        <% }); %>
+        <% if (!rows.length) { %><tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No job logs</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% if (totalPages > 1) { %>
+<div class="flex justify-center gap-2 mt-6">
+  <% for (let i = 1; i <= totalPages; i++) { %>
+  <a href="/admin/jobs?page=<%= i %>" class="px-3 py-1.5 text-sm rounded-lg <%= i === page ? 'bg-brand-500 text-white' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-700' %> transition"><%= i %></a>
+  <% } %>
+</div>
+<% } %>
+
+<%- include('partials/footer') %>

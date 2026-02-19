@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Referrals | WA Campaign</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { 50:'#f0fdf4', 100:'#dcfce7', 200:'#bbf7d0', 300:'#86efac', 400:'#4ade80', 500:'#22c55e', 600:'#16a34a', 700:'#15803d', 800:'#166534', 900:'#14532d' } } } }
+    }
+  </script>
+  <style>
+    @keyframes fadeUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .animate-fade-up{animation:fadeUp .5s ease-out both}
+    .delay-100{animation-delay:.1s}.delay-200{animation-delay:.2s}
+  </style>
+</head>
+<body class="bg-gray-100">
+<div class="max-w-sm mx-auto min-h-screen bg-gray-50 shadow-xl relative">
+
+<!-- Top Bar -->
+<div class="bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-500 px-5 pt-12 pb-6 rounded-b-3xl relative overflow-hidden">
+  <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4"></div>
+  <div class="flex items-center gap-3 mb-2 relative z-10">
+    <a href="/home" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur">
+      <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <h1 class="text-white text-lg font-bold">Daftar Referral</h1>
+  </div>
+  <p class="text-purple-200 text-xs ml-11 relative z-10"><%= referrals.length %> orang bergabung lewat kamu 🎉</p>
+</div>
+
+<div class="px-5 -mt-4 space-y-3 pb-8">
+
+  <!-- Referral Link Card -->
+  <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 animate-fade-up">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="text-lg">🔗</span>
+      <h3 class="text-sm font-bold text-gray-800">Link Referral Kamu</h3>
+    </div>
+    <p class="text-xs text-gray-500 mb-3">Share dan dapetin bonus dari setiap teman yang earning!</p>
+    <div class="flex gap-2">
+      <input type="text" readonly value="<%= baseUrl %>/login?ref=<%= user.referral_code %>"
+        class="flex-1 text-xs bg-gray-50 rounded-lg px-3 py-2 text-gray-600 border border-gray-200" id="refLink">
+      <button onclick="copyRef()" class="px-3 py-2 bg-purple-500 text-white rounded-lg text-xs font-bold hover:bg-purple-600 transition active:scale-95">Copy</button>
+    </div>
+  </div>
+
+  <!-- Total Bonus -->
+  <div class="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl p-4 shadow-lg shadow-purple-500/20 animate-fade-up delay-100">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-purple-100 text-xs">Total Bonus dari Referral</p>
+        <p class="text-2xl font-black text-white mt-1"><%= formatMoney(referrals.reduce((sum, r) => sum + parseFloat(r.total_bonus_earned || 0), 0)) %></p>
+      </div>
+      <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl backdrop-blur">💎</div>
+    </div>
+  </div>
+
+  <!-- Referrals List -->
+  <% if (referrals.length > 0) { %>
+    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider px-1 animate-fade-up delay-200">Daftar Teman</h3>
+    <% referrals.forEach((r, i) => { %>
+    <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 flex items-center justify-between animate-fade-up" style="animation-delay: <%= 0.2 + i * 0.05 %>s">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center shadow-sm">
+          <span class="text-sm font-bold text-white"><%= r.referred_name ? r.referred_name.charAt(0).toUpperCase() : '?' %></span>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-800"><%= r.referred_name || 'Unknown' %></p>
+          <p class="text-xs text-gray-400"><%= r.referred_email || '' %></p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-sm font-bold text-purple-600">+<%= formatMoney(r.total_bonus_earned) %></p>
+        <p class="text-xs text-gray-400">bonus</p>
+      </div>
+    </div>
+    <% }); %>
+  <% } else { %>
+    <div class="bg-white rounded-2xl shadow-sm p-8 border border-gray-100 text-center animate-fade-up delay-200">
+      <div class="text-5xl mb-3">🤝</div>
+      <p class="text-gray-700 text-sm font-bold mb-1">Belum ada referral</p>
+      <p class="text-gray-400 text-xs leading-relaxed">Ajak teman kamu gabung lewat link di atas.<br>Setiap mereka earning, kamu dapet bonus otomatis! 🔥</p>
+    </div>
+  <% } %>
+</div>
+
+<script>
+function copyRef() {
+  navigator.clipboard.writeText(document.getElementById('refLink').value);
+  alert('Link referral disalin! 📋');
+}
+</script>
+
+</div>
+</body>
+</html>

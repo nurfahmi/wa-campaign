@@ -1,0 +1,116 @@
+<%- include('partials/header') %>
+
+<div class="max-w-2xl mx-auto space-y-6">
+
+  <!-- General Settings -->
+  <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
+    <h3 class="font-semibold mb-1">⚙️ System Settings</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Configure how the platform behaves</p>
+
+    <form method="POST" action="/admin/settings" class="space-y-6">
+
+      <!-- Duplicate Prevention -->
+      <!-- General -->
+      <div class="space-y-4">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">General</h4>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency Symbol</label>
+            <p class="text-xs text-gray-400 mb-2">Select or type a custom symbol</p>
+            <% const currSetting = settings.find(s => s.key_name === 'currency_symbol'); const currVal = currSetting ? currSetting.value : '$'; %>
+            <select id="currPreset" onchange="document.getElementById('currCustom').value=this.value" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none mb-2">
+              <option value="$" <%= currVal === '$' ? 'selected' : '' %>>$ — US Dollar</option>
+              <option value="Rp" <%= currVal === 'Rp' ? 'selected' : '' %>>Rp — Rupiah</option>
+              <option value="€" <%= currVal === '€' ? 'selected' : '' %>>€ — Euro</option>
+              <option value="£" <%= currVal === '£' ? 'selected' : '' %>>£ — Pound</option>
+              <option value="¥" <%= currVal === '¥' ? 'selected' : '' %>>¥ — Yen / Yuan</option>
+              <option value="₩" <%= currVal === '₩' ? 'selected' : '' %>>₩ — Won</option>
+              <option value="₹" <%= currVal === '₹' ? 'selected' : '' %>>₹ — Rupee</option>
+              <option value="₱" <%= currVal === '₱' ? 'selected' : '' %>>₱ — Peso</option>
+              <option value="฿" <%= currVal === '฿' ? 'selected' : '' %>>฿ — Baht</option>
+              <option value="₫" <%= currVal === '₫' ? 'selected' : '' %>>₫ — Dong</option>
+              <option value="RM" <%= currVal === 'RM' ? 'selected' : '' %>>RM — Ringgit</option>
+              <option value="R$" <%= currVal === 'R$' ? 'selected' : '' %>>R$ — Real</option>
+              <option value="custom" <%= !['$','Rp','€','£','¥','₩','₹','₱','฿','₫','RM','R$'].includes(currVal) ? 'selected' : '' %>>Custom...</option>
+            </select>
+            <input type="text" name="currency_symbol" id="currCustom" value="<%= currVal %>" maxlength="5" placeholder="Type symbol" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none font-bold text-center">
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Decimal Places</label>
+            <p class="text-xs text-gray-400 mb-2">Number of decimals for amounts</p>
+            <% const decSetting = settings.find(s => s.key_name === 'currency_decimals'); const decVal = decSetting ? decSetting.value : '2'; %>
+            <select name="currency_decimals" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+              <option value="0" <%= decVal === '0' ? 'selected' : '' %>>0 — Rp1.500</option>
+              <option value="1" <%= decVal === '1' ? 'selected' : '' %>>1 — $1,500.5</option>
+              <option value="2" <%= decVal === '2' ? 'selected' : '' %>>2 — $1,500.50</option>
+              <option value="3" <%= decVal === '3' ? 'selected' : '' %>>3 — $1,500.500</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Management -->
+      <div class="space-y-4">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Target Management</h4>
+
+        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+          <div>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Prevent duplicate phone across campaigns</label>
+            <p class="text-xs text-gray-400 mt-0.5">If enabled, a phone number can only appear in one campaign</p>
+          </div>
+          <select name="prevent_duplicate_phone_across_campaigns" class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            <% const preventDup = settings.find(s => s.key_name === 'prevent_duplicate_phone_across_campaigns'); %>
+            <option value="false" <%= (!preventDup || preventDup.value === 'false') ? 'selected' : '' %>>Off</option>
+            <option value="true" <%= (preventDup && preventDup.value === 'true') ? 'selected' : '' %>>On</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- User Defaults -->
+      <div class="space-y-4">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">User Defaults</h4>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default daily limit</label>
+            <p class="text-xs text-gray-400 mb-2">Jobs per day for new users</p>
+            <% const dailyLimit = settings.find(s => s.key_name === 'default_daily_limit'); %>
+            <input type="number" name="default_daily_limit" value="<%= dailyLimit ? dailyLimit.value : '50' %>" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default hourly limit</label>
+            <p class="text-xs text-gray-400 mb-2">Jobs per hour for new users</p>
+            <% const hourlyLimit = settings.find(s => s.key_name === 'default_hourly_limit'); %>
+            <input type="number" name="default_hourly_limit" value="<%= hourlyLimit ? hourlyLimit.value : '10' %>" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- Referral -->
+      <div class="space-y-4">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Referral System</h4>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Referral bonus (%)</label>
+            <p class="text-xs text-gray-400 mb-2">% of referral's reward given as bonus</p>
+            <% const refBonus = settings.find(s => s.key_name === 'referral_bonus_percent'); %>
+            <input type="number" step="0.1" name="referral_bonus_percent" value="<%= refBonus ? refBonus.value : '10' %>" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+          </div>
+          <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Min withdrawal (<%= currency %>)</label>
+            <p class="text-xs text-gray-400 mb-2">Minimum balance to request withdrawal</p>
+            <% const minWd = settings.find(s => s.key_name === 'min_withdrawal'); %>
+            <input type="number" step="0.01" name="min_withdrawal" value="<%= minWd ? minWd.value : '5.00' %>" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full py-3 bg-brand-500 text-white rounded-xl font-medium hover:bg-brand-600 transition">Save Settings</button>
+    </form>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
