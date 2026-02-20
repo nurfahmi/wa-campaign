@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/AuthController');
-const { authLimiter } = require('../middlewares/rateLimiter');
 
 router.get('/login', AuthController.loginPage);
-router.get('/auth/google', authLimiter, AuthController.googleAuth);
+router.get('/auth/google', AuthController.googleAuth);
 router.get('/auth/google/callback', AuthController.googleCallback);
 router.get('/logout', AuthController.logout);
 

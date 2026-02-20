@@ -8,7 +8,6 @@ const flash = require('connect-flash');
 const config = require('./src/config/env');
 const passport = require('./src/config/passport');
 const errorHandler = require('./src/middlewares/errorHandler');
-const { globalLimiter } = require('./src/middlewares/rateLimiter');
 const { initDatabase } = require('./src/config/database');
 
 // Routes
@@ -34,7 +33,6 @@ app.use(morgan('short'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(globalLimiter);
 
 // Session
 app.use(session({
