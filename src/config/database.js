@@ -44,6 +44,9 @@ async function initDatabase() {
       name VARCHAR(191) NOT NULL,
       email VARCHAR(191) NOT NULL,
       country VARCHAR(5) NULL,
+      phone_number VARCHAR(20) NULL,
+      wa_session_id VARCHAR(191) NULL,
+      wa_connected TINYINT NOT NULL DEFAULT 0,
       credit_balance DECIMAL(18,2) NOT NULL DEFAULT 0.00,
       referral_code VARCHAR(20) NULL,
       referred_by BIGINT NULL,
@@ -201,6 +204,16 @@ async function initDatabase() {
 
   for (const sql of tables) {
     await pool.query(sql);
+  }
+
+  // Migrations: add missing columns to existing tables
+  const migrations = [
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20) NULL AFTER country`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS wa_session_id VARCHAR(191) NULL AFTER phone_number`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS wa_connected TINYINT NOT NULL DEFAULT 0 AFTER wa_session_id`,
+  ];
+  for (const sql of migrations) {
+    try { await pool.query(sql); } catch (e) { /* column may already exist */ }
   }
 
   // Seed default system settings (ignore if already exist)
