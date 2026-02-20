@@ -206,15 +206,22 @@ async function initDatabase() {
     await pool.query(sql);
   }
 
-  // Migrations: add missing columns to existing tables
-  const migrations = [
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20) NULL AFTER country`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS wa_session_id VARCHAR(191) NULL AFTER phone_number`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS wa_connected TINYINT NOT NULL DEFAULT 0 AFTER wa_session_id`,
-  ];
-  for (const sql of migrations) {
-    try { await pool.query(sql); } catch (e) { /* column may already exist */ }
-  }
+  // Migrations: add missing columns to existing tables (MySQL-compatible)
+  const addColumnIfNotExists = async (table, column, definition) => {
+    const [rows] = await pool.query(
+      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+      [config.db.database, table, column]
+    );
+    if (rows[0].cnt === 0) {
+      await pool.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+    }
+  };
+
+  try {
+    await addColumnIfNotExists('users', 'phone_number', 'VARCHAR(20) NULL');
+    await addColumnIfNotExists('users', 'wa_session_id', 'VARCHAR(191) NULL');
+    await addColumnIfNotExists('users', 'wa_connected', 'TINYINT NOT NULL DEFAULT 0');
+  } catch (e) { console.log('Migration note:', e.message); }
 
   // Seed default system settings (ignore if already exist)
   const defaults = [
