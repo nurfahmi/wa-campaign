@@ -45,13 +45,41 @@ class UserController {
       const sessionId = `user-${req.user.id}`;
 
       // Call WA API to create session with pairing code
-      const response = await fetch(`${config.wa.baseUrl}/api/sessions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, phoneNumber: cleanPhone }),
-      });
-
-      const data = await response.json();
+      const url = `${config.wa.baseUrl}/api/sessions`;
+      const payload = JSON.stringify({ sessionId, phoneNumber: cleanPhone });
+      
+      let data;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+        });
+        data = await response.json();
+      } catch (fetchErr) {
+        // Native fetch failed (likely SSL), fallback to https module
+        console.log('WA API native fetch failed:', fetchErr.message, '- using https fallback');
+        data = await new Promise((resolve, reject) => {
+          const urlObj = new URL(url);
+          const mod = urlObj.protocol === 'https:' ? require('https') : require('http');
+          const reqOpt = {
+            hostname: urlObj.hostname,
+            port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+            path: urlObj.pathname,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+            rejectUnauthorized: false,
+          };
+          const r = mod.request(reqOpt, (res) => {
+            let body = '';
+            res.on('data', c => body += c);
+            res.on('end', () => { try { resolve(JSON.parse(body)); } catch (e) { reject(new Error('Invalid JSON: ' + body)); } });
+          });
+          r.on('error', reject);
+          r.write(payload);
+          r.end();
+        });
+      }
 
       if (data.pairingCode) {
         // Save phone number and session ID to user
