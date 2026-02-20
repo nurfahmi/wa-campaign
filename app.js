@@ -21,6 +21,9 @@ const { generateSetupToken } = require('./src/routes/setup');
 
 const app = express();
 
+// Trust proxy (Cloudflare Tunnel / reverse proxy)
+app.set('trust proxy', 1);
+
 // View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
