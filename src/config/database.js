@@ -202,45 +202,50 @@ async function initDatabase() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   ];
 
-  // Disable FK checks during table creation (handles existing tables with different types)
-  await pool.query('SET FOREIGN_KEY_CHECKS = 0');
-
-  for (const sql of tables) {
-    try { await pool.query(sql); } catch (e) { console.log('Table creation note:', e.message); }
-  }
-
-  await pool.query('SET FOREIGN_KEY_CHECKS = 1');
-
-  // Migrations: add missing columns to existing tables (MySQL-compatible)
-  const addColumnIfNotExists = async (table, column, definition) => {
-    const [rows] = await pool.query(
-      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
-      [config.db.database, table, column]
-    );
-    if (rows[0].cnt === 0) {
-      await pool.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
-    }
-  };
-
+  // Use a SINGLE connection so SET commands apply to all queries
+  const conn = await pool.getConnection();
   try {
-    await addColumnIfNotExists('users', 'phone_number', 'VARCHAR(20) NULL');
-    await addColumnIfNotExists('users', 'wa_session_id', 'VARCHAR(191) NULL');
-    await addColumnIfNotExists('users', 'wa_connected', 'TINYINT NOT NULL DEFAULT 0');
-  } catch (e) { console.log('Migration note:', e.message); }
+    await conn.query('SET FOREIGN_KEY_CHECKS = 0');
 
-  // Seed default system settings (ignore if already exist)
-  const defaults = [
-    ['anti_spam_delay_min', '3000'],
-    ['anti_spam_delay_max', '8000'],
-    ['default_referral_percent', '5.00'],
-    ['prevent_duplicate_phone_across_campaigns', 'false'],
-    ['max_retry_count', '3'],
-  ];
-  for (const [key, value] of defaults) {
-    await pool.query(
-      `INSERT IGNORE INTO system_settings (key_name, value) VALUES (?, ?)`,
-      [key, value]
-    );
+    for (const sql of tables) {
+      try { await conn.query(sql); } catch (e) { console.log('Table creation note:', e.message); }
+    }
+
+    await conn.query('SET FOREIGN_KEY_CHECKS = 1');
+
+    // Migrations: add missing columns to existing tables (MySQL-compatible)
+    const addColumnIfNotExists = async (table, column, definition) => {
+      const [rows] = await conn.query(
+        `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+        [config.db.database, table, column]
+      );
+      if (rows[0].cnt === 0) {
+        await conn.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+      }
+    };
+
+    try {
+      await addColumnIfNotExists('users', 'phone_number', 'VARCHAR(20) NULL');
+      await addColumnIfNotExists('users', 'wa_session_id', 'VARCHAR(191) NULL');
+      await addColumnIfNotExists('users', 'wa_connected', 'TINYINT NOT NULL DEFAULT 0');
+    } catch (e) { console.log('Migration note:', e.message); }
+
+    // Seed default system settings (ignore if already exist)
+    const defaults = [
+      ['anti_spam_delay_min', '3000'],
+      ['anti_spam_delay_max', '8000'],
+      ['default_referral_percent', '5.00'],
+      ['prevent_duplicate_phone_across_campaigns', 'false'],
+      ['max_retry_count', '3'],
+    ];
+    for (const [key, value] of defaults) {
+      await conn.query(
+        `INSERT IGNORE INTO system_settings (key_name, value) VALUES (?, ?)`,
+        [key, value]
+      );
+    }
+  } finally {
+    conn.release();
   }
 
   console.log('✅ Database & tables ready');
