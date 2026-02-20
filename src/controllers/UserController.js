@@ -69,8 +69,8 @@ class UserController {
 
       return res.status(400).json({ success: false, message: data.message || 'Failed to generate pairing code' });
     } catch (err) {
-      console.error('WA connect error:', err.message);
-      return res.status(500).json({ success: false, message: 'Failed to connect to WhatsApp service' });
+      console.error('WA connect error:', err.message, err.cause || '');
+      return res.status(500).json({ success: false, message: 'Failed to connect to WhatsApp service: ' + err.message });
     }
   }
 
