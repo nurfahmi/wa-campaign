@@ -202,9 +202,14 @@ async function initDatabase() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
   ];
 
+  // Disable FK checks during table creation (handles existing tables with different types)
+  await pool.query('SET FOREIGN_KEY_CHECKS = 0');
+
   for (const sql of tables) {
-    await pool.query(sql);
+    try { await pool.query(sql); } catch (e) { console.log('Table creation note:', e.message); }
   }
+
+  await pool.query('SET FOREIGN_KEY_CHECKS = 1');
 
   // Migrations: add missing columns to existing tables (MySQL-compatible)
   const addColumnIfNotExists = async (table, column, definition) => {
